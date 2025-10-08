@@ -1,8 +1,8 @@
 <!--
 Sync Impact Report:
-Version Change: 1.1.2 → 1.1.3
+Version Change: 1.1.4 → 1.1.5
 Modified Principles:
-  - VI. Ticket-Based Task Workflow - Clarified todo.md generation uses both /speckit.specify and /speckit.plan
+  - VI. Ticket-Based Task Workflow - Added clarification refinement step after questions.md answers
 Added Sections: None
 Removed Sections: None
 Templates Status:
@@ -87,28 +87,37 @@ All implementation tasks MUST follow a structured ticket workflow for traceabili
   - Descriptive name: Kebab-case derived from task title or understanding (e.g., `initialize-function`, `add-gig-module`)
   - Example: `tickets/20251009164530-initialize-function/`
 - **Ticket Structure**: Each ticket directory MUST contain:
-  1. **todo.md**: Implementation plan generated using `/speckit.specify` (to analyze task) followed by `/speckit.plan` (to create plan with tech stack)
+  1. **todo.md**: Implementation plan generated using a three-step process: `/speckit.specify` → `/speckit.plan` → `/speckit.tasks`
   2. **questions.md**: Clarifying questions generated using `/speckit.clarify` command
   3. **user-todo.md**: Manual steps required outside the codebase (database configuration, external service setup, etc.)
   4. **analysis.md**: Post-implementation analysis generated using `/speckit.analyze` command (created ONLY after implementation completion)
-- **Todo Generation Process**:
-  - `/speckit.specify`: Reads and analyzes the task markdown file from `implementation-tasks/<task-name>.md`
-  - `/speckit.plan`: Creates the implementation plan ensuring use of current project tech stack unless task file specifies additional requirements under "Tech Stack Required" section
-  - Both commands work together to produce `todo.md`
+- **Todo Generation Process** (Three-Step Pipeline):
+  1. `/speckit.specify`: Reads and analyzes the task markdown file from `implementation-tasks/<task-name>.md`, creating the feature specification
+  2. `/speckit.plan`: Creates the implementation plan based on the specification, ensuring use of current project tech stack unless task file specifies additional requirements under "Tech Stack Required" section
+  3. `/speckit.tasks`: Generates actionable, dependency-ordered task list based on the specification and plan
+  - All three commands work together sequentially to produce the complete `todo.md`
 - **Tech Stack Requirements**:
   - Default tech stack MUST be based on the current project technology (MercurJS, MedusaJS, TypeScript, PostgreSQL, etc.)
   - Additional tech stack requirements MUST only be introduced when explicitly specified in the task file under a "Tech Stack Required" section
   - The `/speckit.plan` command MUST use the existing project tech stack unless the task file specifies additional requirements
 - **Workflow Execution Order**:
   1. Create timestamped ticket directory: `tickets/YYYYMMDDHHMMSS-<descriptive-name>/`
-  2. Generate todo.md (via `/speckit.specify` then `/speckit.plan`)
+  2. Generate initial todo.md (via `/speckit.specify` → `/speckit.plan` → `/speckit.tasks`)
   3. Generate questions.md (via `/speckit.clarify`)
   4. Create user-todo.md (manual steps identification)
-  5. Implement the task according to todo.md
-  6. Generate analysis.md (via `/speckit.analyze`) after implementation
+  5. **PAUSE**: Wait for user to answer all questions in questions.md
+  6. **Refinement Phase** (after user confirms questions are answered):
+     - Re-run three-step process: `/speckit.specify` → `/speckit.plan` → `/speckit.tasks`
+     - Update todo.md based on user's answers to clarification questions
+     - Update user-todo.md if answers require additional manual steps
+     - Do NOT proceed to implementation until user explicitly requests it
+  7. **PAUSE**: Wait for explicit user approval to begin implementation
+  8. Implement the task according to updated todo.md
+  9. Generate analysis.md (via `/speckit.analyze`) after implementation completion
 - **Automated Workflow**: The ticket generation process MUST be automated when the `implementation-tasks/<task-name>.md` pattern is recognized
+- **Clarification Refinement**: When user indicates questions have been answered, the three-step pipeline MUST be re-executed to incorporate answers into todo.md and user-todo.md before implementation begins
 
-**Rationale**: A structured ticket workflow ensures every task has clear planning, addresses ambiguities upfront, separates developer and user responsibilities, and provides post-implementation validation. Timestamped folders enable chronological tracking and prevent naming conflicts. Tech stack consistency ensures alignment with the existing architecture unless explicitly required otherwise. This improves task clarity, reduces rework, and maintains a complete audit trail of implementation decisions.
+**Rationale**: A structured ticket workflow ensures every task has clear planning, addresses ambiguities upfront, separates developer and user responsibilities, and provides post-implementation validation. The clarification refinement phase ensures that user answers to questions are incorporated into the implementation plan before work begins, reducing mid-implementation changes and rework. Timestamped folders enable chronological tracking and prevent naming conflicts. Tech stack consistency ensures alignment with the existing architecture unless explicitly required otherwise. This improves task clarity, reduces rework, and maintains a complete audit trail of implementation decisions.
 
 ## Development Standards
 
@@ -188,4 +197,4 @@ When deviating from constitutional principles (e.g., adding complexity, skipping
 4. Get explicit approval from technical leads
 5. Add technical debt tracking if the violation is temporary
 
-**Version**: 1.1.3 | **Ratified**: 2025-10-09 | **Last Amended**: 2025-10-09
+**Version**: 1.1.5 | **Ratified**: 2025-10-09 | **Last Amended**: 2025-10-09
